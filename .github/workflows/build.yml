@@ -23,6 +23,33 @@ jobs:
           sed -i 's|if (Build.VERSION.SDK_INT >= 33) return p.pid().toInt()|// pid() removido|' app/src/main/kotlin/org/openmux/bridge/FfmpegEngine.kt
           grep -n "pid()" app/src/main/kotlin/org/openmux/bridge/FfmpegEngine.kt || echo "patch aplicado"
 
+      - name: Correcao do codigo (patch 2 - mascara de credenciais)
+        working-directory: openmux
+        run: |
+          cat > /tmp/patch2.py <<'PYEOF'
+          import sys
+          p = sys.argv[1]
+          s = open(p, encoding='utf-8').read()
+          a = s.index('    private val SECRET_RE')
+          b = s.index('    /** Mantém apenas')
+          new_re = ('    private val HEADER_RE = Regex(\n'
+                    '        """(?i)(proxy-authorization|authorization|set-cookie|cookie)(["\']?\\s*[:=]\\s*)[^\\r\\n]+"""\n'
+                    '    )\n'
+                    '    private val SECRET_RE = Regex(\n'
+                    '        """(?i)(token|api[_-]?key|password|passwd|secret|signature|sig)(["\']?\\s*[:=]\\s*)[^\\s&"\',;]+"""\n'
+                    '    )\n\n')
+          s = s[:a] + new_re + s[b:]
+          old = '        r = SECRET_RE.replace(r) { m -> m.groupValues[1] + m.groupValues[2] + "***" }\n'
+          new = ('        r = HEADER_RE.replace(r) { m -> m.groupValues[1] + m.groupValues[2] + "***" }\n'
+                 '        r = SECRET_RE.replace(r) { m -> m.groupValues[1] + m.groupValues[2] + "***" }\n')
+          assert old in s
+          s = s.replace(old, new)
+          open(p, 'w', encoding='utf-8').write(s)
+          print("patch2 ok")
+
+          PYEOF
+          python3 /tmp/patch2.py app/src/main/kotlin/org/openmux/bridge/Util.kt
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
