@@ -1,0 +1,19 @@
+{
+  "name": "OpenMux Teste",
+  "version": "1.0.1",
+  "description": "Plugin de teste: verifica se o Nuvio alcança o OpenMux Bridge em 127.0.0.1:8765",
+  "scrapers": [
+    {
+      "id": "openmux-probe",
+      "name": "OpenMux Probe",
+      "description": "Testa a conexao com o OpenMux Bridge local",
+      "version": "1.0.1",
+      "author": "OpenMux",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "providers/openmux-probe.js",
+      "enabled": true,
+      "formats": ["mkv"],
+      "contentLanguage": ["en", "pt"]
+    }
+  ]
+}
