@@ -17,6 +17,12 @@ jobs:
           unzip -q "$ZIP"
           ls openmux
 
+      - name: Correcao do codigo (patch 1)
+        working-directory: openmux
+        run: |
+          sed -i 's|if (Build.VERSION.SDK_INT >= 33) return p.pid().toInt()|// pid() removido|' app/src/main/kotlin/org/openmux/bridge/FfmpegEngine.kt
+          grep -n "pid()" app/src/main/kotlin/org/openmux/bridge/FfmpegEngine.kt || echo "patch aplicado"
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
